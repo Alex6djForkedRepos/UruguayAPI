@@ -1117,6 +1117,18 @@ Obtiene los beneficios existenes para el tipo de banco
 </details>
 ---
 
+# Comunidad
+
+UruguayAPI es un proyecto abierto y cualquier contribución es bienvenida. Si querés agregar un nuevo endpoint, mejorar uno existente o reportar un bug, abrí un issue o mandá un PR.
+
+## Hecho con UruguayAPI
+
+**Carpincho** — La superapp uruguaya. Clima, eventos, loterías, tipo de cambio y mucho más, todo en un solo lugar.
+
+[Descargar en App Store](https://apps.apple.com/uy/app/carpincho/id6759762265)
+
+---
+
 ### Inspirado por 💡:
 
 https://brasilapi.com.br/
