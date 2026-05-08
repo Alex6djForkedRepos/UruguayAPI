@@ -26,6 +26,12 @@ class Api::V1::EventsController < ApplicationController
     render json: { error: 'Invalid date format. Use DD-MM-YYYY' }, status: :unprocessable_entity
   end
 
+  def sodre
+    render json: SodreService.fetch_events(**date_params)
+  rescue ArgumentError
+    render json: { error: 'Invalid date format. Use DD-MM-YYYY' }, status: :unprocessable_entity
+  end
+
   private
 
   VALID_PERIODS = %w[daily weekly monthly].freeze

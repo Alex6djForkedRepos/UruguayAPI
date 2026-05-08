@@ -33,6 +33,7 @@ Rails.application.routes.draw do
         get 'tickantel'
         get 'redtickets'
         get 'teatro_solis'
+        get 'sodre'
       end
 
       scope 'horoscope', controller: 'horoscope', as: 'horoscope' do
