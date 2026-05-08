@@ -54,16 +54,26 @@ class TeatroSolisService
     end
 
     def build_event(card)
+      event_link = absolute_url(attr_at(card, 'a.picture', 'href'))
       {
-        source: 'teatro_solis',
-        name: text_at(card, 'h2 a'),
+        source: 'Teatro Solís',
+        source_url: BASE_URL,
+        title: text_at(card, 'h2 a'),
         date: text_at(card, 'li.icdia'),
         venue: text_at(card, 'li.icsala'),
         category: text_at(card, 'li.icgenero'),
-        img: absolute_url(attr_at(card, 'img', 'src')),
-        ticket: attr_at(card, 'li.icticket a', 'href'),
-        info: absolute_url(attr_at(card, 'a.picture', 'href'))
+        thumbnail: absolute_url(attr_at(card, 'img', 'src')),
+        description: fetch_description(event_link),
+        buy_tickets: attr_at(card, 'li.icticket a', 'href'),
+        event_link: event_link,
       }
+    end
+
+    def fetch_description(url)
+      return nil unless url&.start_with?(BASE_URL)
+
+      doc = Nokogiri::HTML(HTTParty.get(url).body)
+      doc.css('.content').text.gsub(/\s+/, ' ').strip.presence
     end
 
     def text_at(node, selector)

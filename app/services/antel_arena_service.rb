@@ -43,18 +43,40 @@ class AntelArenaService
 
     private
 
+    def fetch_details(url)
+      return {} unless url&.start_with?(BASE_URL)
+
+      doc = Nokogiri::HTML(HTTParty.get(url).body)
+
+      info = doc.css('.eventDetailList .item').each_with_object({}) do |item, h|
+        label = item.css('div').text.strip
+        value = item.css('span').first&.text&.strip
+        h[label] = value
+      end
+
+      {
+        date: info['fecha'],
+        time: info['hora'],
+        doors_open: info['las puertas se abrirán'],
+        price: info['precio de las entradas'],
+        description: doc.css('.event_description').text.gsub(/\s+/, ' ').strip.presence,
+      }
+    end
+
     def parse_events(html)
       doc = Nokogiri::HTML(html)
       doc.css('div.eventItem').map do |item|
+        artist     = item.css('.info-wrapper .info .h3').text.strip
+        concert    = item.css('.info-wrapper .info .h4').text.strip
+        event_link = item.css('.info-wrapper .buttons a')[1]&.attr('href')
         {
-          source: 'antel_arena',
-          date: item.css('.info-wrapper .info .date').text.strip,
+          source: 'Antel Arena',
+          source_url: BASE_URL,
+          title: [concert, artist].reject(&:empty?).join(' - '),
           thumbnail: item.css('.thumb img').attr('src')&.value,
-          artist: item.css('.info-wrapper .info .h3').text.strip,
-          concert: item.css('.info-wrapper .info .h4').text.strip,
-          more_info: item.css('.info-wrapper .buttons a')[0]&.attr('href'),
+          event_link: event_link,
           buy_tickets: item.css('.info-wrapper .buttons a.tickets')[0]&.attr('href'),
-        }
+        }.merge(fetch_details(event_link))
       end
     end
   end

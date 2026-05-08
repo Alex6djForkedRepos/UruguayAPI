@@ -67,10 +67,11 @@ class RedticketsService
       link = raw['Link'].to_s
       info = link.start_with?('http') ? link : "#{BASE_URL}#{link}"
       {
-        source: 'redtickets',
-        id: raw['Id'], name: raw['Title'], date: raw['Date'],
+        source: 'Redtickets',
+        source_url: BASE_URL,
+        id: raw['Id'], title: raw['Title'], date: raw['Date'],
         venue: raw['Address'], description: strip_html(raw['Description']),
-        img: raw['Image'], info: info, category: raw['Category']
+        thumbnail: raw['Image'], event_link: info, category: raw['Category']
       }
     end
 

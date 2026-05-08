@@ -46,71 +46,106 @@ class CarteleraService
     private
 
     def extract_data(article, type)
+      raw_link = article.css('.poster-container > a').first&.[]('href').to_s
       img = article.css('.poster-container > a > img').first&.[]('src')
       name = article.css('.info-holder .name').text.strip
       event_data = article.css('.info-holder .event-data li')
+      raw_event_link = raw_link.start_with?('http') ? raw_link : "#{BASE_URL}/#{raw_link.sub(%r{\A/+}, '')}"
+      event_link = raw_event_link.sub(%r{(?<=\w)//}, '/')
+      description = fetch_description(event_link)
 
       case type
         when 'art'
           return {
-            name: name,
+            source: 'Cartelera',
+            source_url: BASE_URL,
+            title: name,
             genre: event_data.css('strong')[0]&.text&.strip,
             show: event_data.css('strong')[1]&.text&.strip,
             room: event_data.css('strong')[2]&.text&.strip,
-            img: img,
+            thumbnail: img,
+            description: description,
+            event_link: event_link,
           }
 
         when 'cable'
           return {
-              name: name,
+              source: 'Cartelera',
+              source_url: BASE_URL,
+              title: name,
               channel: event_data.css('strong')[0]&.text&.strip,
-              shcedule: event_data.css('strong')[1]&.text&.strip,
+              schedule: event_data.css('strong')[1]&.text&.strip,
               genre: event_data.css('strong')[2]&.text&.strip,
               director: event_data.css('strong')[3]&.text&.strip,
               protagonists: event_data.css('strong')[4]&.text&.strip,
-              img: img,
+              thumbnail: img,
+              description: description,
+              event_link: event_link,
             }
 
 
         when 'theater'
          return {
-            name: name,
+            source: 'Cartelera',
+            source_url: BASE_URL,
+            title: name,
             genre: event_data.css('strong')[0]&.text&.strip,
             director: event_data.css('strong')[1]&.text&.strip,
             room: event_data.css('strong')[2]&.text&.strip,
-            img: img,
-            today_schedules: extract_schedules(article)
+            thumbnail: img,
+            today_schedules: extract_schedules(article),
+            description: description,
+            event_link: event_link,
           }
 
       when 'videos'
         return {
-          name: name,
+          source: 'Cartelera',
+          source_url: BASE_URL,
+          title: name,
           genre: event_data.css('strong')[0]&.text&.strip,
           director: event_data.css('strong')[1]&.text&.strip,
           protagonists: event_data.css('strong')[2]&.text&.strip,
           available_on: event_data.css('a').first&.[]('href'),
-          img: img,
+          thumbnail: img,
+          description: description,
+          event_link: event_link,
         }
 
       when 'music'
         return {
-          name: name,
+          source: 'Cartelera',
+          source_url: BASE_URL,
+          title: name,
           cast: event_data.css('strong')[0]&.text&.strip,
           room: event_data[1]&.text&.strip,
           locations: event_data[2]&.text&.strip,
-          img: img,
+          thumbnail: img,
+          description: description,
+          event_link: event_link,
         }
 
       when 'movies'
         return {
-            name: name,
+            source: 'Cartelera',
+            source_url: BASE_URL,
+            title: name,
             genre: event_data.css('strong')[0]&.text&.strip,
             director: event_data.css('strong')[1]&.text&.strip,
             protagonists: event_data.css('strong')[2]&.text&.strip,
-            img: img,
-            today_schedules: extract_schedules(article)
+            thumbnail: img,
+            today_schedules: extract_schedules(article),
+            description: description,
+            event_link: event_link,
           }
         end
+    end
+
+    def fetch_description(url)
+      return nil unless url&.start_with?('http')
+
+      doc = Nokogiri::HTML(HTTParty.get(url).body)
+      doc.css('.container-ppal p').text.gsub(/\s+/, ' ').strip.presence
     end
 
     def extract_schedules(article)
@@ -172,64 +207,76 @@ class CarteleraService
 
     def cine_event_data(event)
         {
-          name: "#{event.css('.container .name').text.strip}",
+          source: 'Cartelera',
+          source_url: BASE_URL,
+          title: event.css('.container .name').text.strip,
           type: event.css('.container .type').text.strip,
           trailer: event.css('.container a.trailer').first&.[]('href'),
-          info: event.css('a').first&.[]('href'),
-          img: event.css('a img').first&.[]('src')
+          event_link: event.css('a').first&.[]('href'),
+          thumbnail: event.css('a img').first&.[]('src')
         }
     end
 
     def musica_event_data(event)
         {
-          name: "#{event.css('.container .name').text.strip}",
+          source: 'Cartelera',
+          source_url: BASE_URL,
+          title: event.css('.container .name').text.strip,
           featured: event.css('.container .destacado').text.strip,
           venue: event.css('.container .venue').text.strip,
-          info: event.css('a').first&.[]('href'),
-          img: event.css('a img').first&.[]('src')
+          event_link: event.css('a').first&.[]('href'),
+          thumbnail: event.css('a img').first&.[]('src')
         }
     end
 
     def videos_event_data(event)
         {
-          name: "#{event.css('.container .name').text.strip}",
+          source: 'Cartelera',
+          source_url: BASE_URL,
+          title: event.css('.container .name').text.strip,
           featured: event.css('.container .destacado').text.strip,
           genre: event.css('.container p').last.text.strip,
-          info: event.css('a').first&.[]('href'),
-          img: event.css('a img').first&.[]('src')
+          event_link: event.css('a').first&.[]('href'),
+          thumbnail: event.css('a img').first&.[]('src')
         }
     end
 
     def teatro_event_data(event)
         {
-          name: "#{event.css('.container .name').text.strip}",
+          source: 'Cartelera',
+          source_url: BASE_URL,
+          title: event.css('.container .name').text.strip,
           featured: event.css('.container .destacado').text.strip,
           venue: event.css('.container .venue').text.strip,
-          info: event.css('a').first&.[]('href'),
-          img: event.css('a img').first&.[]('src')
+          event_link: event.css('a').first&.[]('href'),
+          thumbnail: event.css('a img').first&.[]('src')
         }
     end
 
     def cable_event_data(event)
         {
-          name: "#{event.css('.container .name').text.strip}",
+          source: 'Cartelera',
+          source_url: BASE_URL,
+          title: event.css('.container .name').text.strip,
           featured: event.css('.container .destacado').text.strip,
           channel: event.css('.container .highlight').last.text.strip,
           genre: event.css('.container p').first.text.strip,
-          info: event.css('a').first&.[]('href'),
-          img: event.css('a img').first&.[]('src')
+          event_link: event.css('a').first&.[]('href'),
+          thumbnail: event.css('a img').first&.[]('src')
         }
     end
 
     def arte_event_data(event)
         {
-          name: "#{event.css('.container .name').text.strip}",
+          source: 'Cartelera',
+          source_url: BASE_URL,
+          title: event.css('.container .name').text.strip,
           featured: event.css('.container .destacado').text.strip,
           genre: event.css('.container p').first.text.strip,
           artist: event.css('.container p')[1]&.text&.strip,
           venue: event.css('.container p').last.text.strip,
-          info: event.css('a').first&.[]('href'),
-          img: event.css('a img').first&.[]('src')
+          event_link: event.css('a').first&.[]('href'),
+          thumbnail: event.css('a img').first&.[]('src')
         }
     end
   end

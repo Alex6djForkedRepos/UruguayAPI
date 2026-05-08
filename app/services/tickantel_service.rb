@@ -36,7 +36,7 @@ class TickantelService
         events = batch
       end
 
-      events.uniq { |e| e[:info] }.map { |e| e.merge(fetch_show(e[:info])) }
+      events.uniq { |e| e[:event_link] }.map { |e| e.merge(fetch_show(e[:event_link])) }
     end
 
     def open_session(date)
@@ -60,12 +60,13 @@ class TickantelService
         next unless href&.include?('espectaculo')
 
         {
-          source: 'tickantel',
-          name: item.css('.title .span-block').first&.text&.strip,
+          source: 'Tickantel',
+          source_url: BASE_URL,
+          title: item.css('.title .span-block').first&.text&.strip,
           date: item.css('.auto-pf-date').text.gsub(/&nbsp;?/, ' ').gsub(/\s+/, ' ').strip,
           venue: item.css('p:last-of-type span').map(&:text).map(&:strip).reject(&:empty?).join(' - '),
-          img: item.css('figure img').first&.attr('src'),
-          info: "#{BASE_URL}/inicio/#{href.delete_prefix('./')}",
+          thumbnail: item.css('figure img').first&.attr('src'),
+          event_link: "#{BASE_URL}/inicio/#{href.delete_prefix('./')}",
         }
       end
     end
@@ -80,9 +81,9 @@ class TickantelService
 
       offers = ld['offers'] || {}
       {
-        name: ld['name'],
+        title: ld['name'],
         description: ld['description'],
-        img: Array(ld['image']).first,
+        thumbnail: Array(ld['image']).first,
         venue: ld.dig('location', 'name'),
         performer: ld.dig('performer', 'name'),
         start_date: ld['startDate'],

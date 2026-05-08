@@ -146,110 +146,121 @@ Obtiene una lista de los titulares de noticias más recientes en Uruguay.
 
 
 <details>
-
   <summary>EVENTOS - QUE HACER?</summary>
 
-### GET /api/v1/events/:event
+Todos los endpoints de eventos devuelven campos normalizados:
 
-Obtiene información sobre los eventos disponibles para la organización enviada
+| Campo | Descripción |
+|-------|-------------|
+| `source` | Nombre legible de la fuente (ej. `"Antel Arena"`, `"Tickantel"`) |
+| `source_url` | URL base del sitio de origen |
+| `title` | Nombre del evento |
+| `thumbnail` | URL de la imagen |
+| `event_link` | Link a la página del evento |
+| `description` | Descripción del evento (cuando disponible) |
+| `date` | Fecha del evento (formato varía por fuente) |
+| `venue` | Lugar del evento (cuando disponible) |
 
-**Parámetros**
+---
 
-- event: De momento, puede ser "antel_arena"
+### GET /api/v1/events/antel_arena
 
-**Respuesta**
-
-- 200 OK: Devuelve un objeto JSON que contiene una lista de items. Cada item es un objeto JSON que representa a un
-  evento.
-
-- 404 Not Found: Si el tipo de evento solicitado no existe.
-
-- 500 Internal Server Error: Si ocurre algún error en el servidor al obtener la lista de items.
-
-### GET /api/v1/events/billboard/:event_type
-
-Obtiene una lista de items para una categoría específica.
-
-**Parámetros**
-
-- event_type: El tipo de evento que se desea obtener. Debe ser una de las siguientes opciones: "art," "cable,"
-  "movies," "music," "theater," o "videos".
+Obtiene los eventos del Antel Arena (antelarena.com.uy). Scrapea el listado completo incluyendo paginación AJAX y enriquece cada evento con detalles desde su página individual.
 
 **Respuesta**
 
-- 200 OK: Devuelve un objeto JSON que contiene una lista de items para la categoría especificada. Cada item es un
-  objeto JSON que representa a un evento.
+- 200 OK: Array de eventos. Cada evento incluye: `source`, `source_url`, `title`, `thumbnail`, `event_link`, `buy_tickets`, `date`, `time`, `doors_open`, `price`, `description`.
 
-- 404 Not Found: Si el tipo de evento solicitado no existe en la lista de categorías.
+- 500 Internal Server Error: Si ocurre algún error al obtener los datos.
 
-- 500 Internal Server Error: Si ocurre algún error en el servidor al obtener la lista de items.
+---
 
 ### GET /api/v1/events/tickantel
 
-Obtiene los eventos disponibles en Tickantel (tickantel.com.uy) con información completa de cada show: nombre,
-descripción, fechas, lugar, precio y link de compra.
+Obtiene los eventos de Tickantel (tickantel.com.uy).
 
 **Parámetros**
 
-- date: (opcional) Fecha específica en formato DD-MM-YYYY. Si no se envía, devuelve los eventos de hoy.
-- period: (opcional) Puede ser "daily" (default), "weekly" (próximos 7 días) o "monthly" (próximos 30 días). Ignorado
-  si se envía date.
+- `date` (opcional): Fecha en formato DD-MM-YYYY. Por defecto, hoy.
+- `period` (opcional): `daily` (default), `weekly` (7 días) o `monthly` (30 días).
 
 **Respuesta**
 
-- 200 OK: Si se solicita un único día, devuelve un array de eventos. Si se solicita un rango (weekly/monthly),
-  devuelve un objeto JSON con la fecha (YYYY-MM-DD) como clave y el array de eventos como valor.
+- 200 OK: Un día → array de eventos. Rango → objeto `{ "YYYY-MM-DD": [...] }`. Cada evento incluye: `source`, `source_url`, `title`, `thumbnail`, `event_link`, `date`, `venue`, `description`, `performer`, `start_date`, `end_date`, `next_function`, `price_low`, `price_high`, `price_currency`.
 
-- 422 Unprocessable Entity: Si el formato de date es inválido.
+- 422 Unprocessable Entity: Formato de fecha inválido.
+- 500 Internal Server Error: Si ocurre algún error al obtener los datos.
 
-- 500 Internal Server Error: Si ocurre algún error en el servidor al obtener la lista de items.</details>
+---
 
 ### GET /api/v1/events/redtickets
 
-Obtiene los eventos disponibles en RedTickets (redtickets.uy). Scrapea el listado completo de
-`/busqueda` y filtra por fecha o período usando heurística sobre el texto de cada función.
-Eventos recurrentes ("Todos los días", "Lunes a Sábado", etc.) se incluyen siempre.
+Obtiene los eventos de RedTickets (redtickets.uy). Filtra por fecha usando heurística sobre el texto; eventos recurrentes ("Todos los días", etc.) se incluyen siempre.
 
 **Parámetros**
 
-- date: (opcional) Fecha específica en formato DD-MM-YYYY. Si no se envía, devuelve los eventos de hoy.
-- period: (opcional) "daily" (default), "weekly" (próximos 7 días) o "monthly" (próximos 30 días).
-  Ignorado si se envía date.
-- details: (opcional) Si es "true", enriquece cada evento con las fechas ISO (`alloweddates`)
-  extraídas de la página de detalle. Más preciso pero mucho más lento.
+- `date` (opcional): Fecha en formato DD-MM-YYYY. Por defecto, hoy.
+- `period` (opcional): `daily` (default), `weekly` o `monthly`.
+- `details` (opcional): Si es `true`, enriquece con fechas ISO desde la página de detalle (más lento).
 
 **Respuesta**
 
-- 200 OK: Si se solicita un único día, devuelve un array de eventos. Si se solicita un rango
-  (weekly/monthly), devuelve un objeto JSON con la fecha (YYYY-MM-DD) como clave y el array de
-  eventos como valor.
+- 200 OK: Un día → array de eventos. Rango → objeto `{ "YYYY-MM-DD": [...] }`. Cada evento incluye: `source`, `source_url`, `title`, `thumbnail`, `event_link`, `date`, `venue`, `description`, `category`, `id`.
 
-- 422 Unprocessable Entity: Si el formato de date es inválido.
+- 422 Unprocessable Entity: Formato de fecha inválido.
+- 500 Internal Server Error: Si ocurre algún error al obtener los datos.
 
-- 500 Internal Server Error: Si ocurre algún error en el servidor al obtener la lista de items.</details>
+---
 
 ### GET /api/v1/events/teatro_solis
 
-Obtiene los eventos del Teatro Solís (teatrosolis.org.uy). Consulta directamente por rango de fechas
-y filtra por día parseando las fechas en español de cada función (incluye eventos con múltiples fechas
-como "9, 10, 16 de mayo").
+Obtiene los eventos del Teatro Solís (teatrosolis.org.uy). Filtra por rango de fechas parseando fechas en español (soporta múltiples fechas: "9, 10, 16 de mayo").
 
 **Parámetros**
 
-- date: (opcional) Fecha específica en formato DD-MM-YYYY. Si no se envía, devuelve los eventos de hoy.
-- period: (opcional) "daily" (default), "weekly" (próximos 7 días) o "monthly" (próximos 30 días).
-  Ignorado si se envía date.
+- `date` (opcional): Fecha en formato DD-MM-YYYY. Por defecto, hoy.
+- `period` (opcional): `daily` (default), `weekly` o `monthly`.
 
 **Respuesta**
 
-- 200 OK: Si se solicita un único día, devuelve un array de eventos. Si se solicita un rango
-  (weekly/monthly), devuelve un objeto JSON con la fecha (YYYY-MM-DD) como clave y el array de
-  eventos como valor. Cada evento incluye: `source`, `name`, `date`, `venue`, `category`, `img`,
-  `ticket` (link a Tickantel) e `info` (link al detalle en teatrosolis.org.uy).
+- 200 OK: Un día → array de eventos. Rango → objeto `{ "YYYY-MM-DD": [...] }`. Cada evento incluye: `source`, `source_url`, `title`, `thumbnail`, `event_link`, `buy_tickets`, `date`, `venue`, `category`, `description`.
 
-- 422 Unprocessable Entity: Si el formato de date es inválido.
+- 422 Unprocessable Entity: Formato de fecha inválido.
+- 500 Internal Server Error: Si ocurre algún error al obtener los datos.
 
-- 500 Internal Server Error: Si ocurre algún error en el servidor al obtener la lista de items.</details>
+---
+
+### GET /api/v1/events/billboard
+
+Obtiene el resumen de la cartelera de la home de cartelera.com.uy, organizado por sección.
+
+**Respuesta**
+
+- 200 OK: Objeto con secciones `cine`, `musica`, `videos`, `teatro`, `cable`, `arte`. Cada evento incluye: `source`, `source_url`, `title`, `thumbnail`, `event_link` y campos específicos por tipo.
+
+- 500 Internal Server Error: Si ocurre algún error al obtener los datos.
+
+---
+
+### GET /api/v1/events/billboard/:event_type
+
+Obtiene el listado completo de un tipo de cartelera.
+
+**Parámetros**
+
+- `event_type`: `movies`, `music`, `theater`, `videos`, `art`. (`cable` no disponible — endpoint roto en la fuente.)
+
+**Respuesta**
+
+- 200 OK: Array de eventos. Todos incluyen: `source`, `source_url`, `title`, `thumbnail`, `event_link`, `description`. Campos adicionales según tipo:
+  - `movies` / `theater`: `genre`, `director`, `protagonists`, `today_schedules`
+  - `music`: `cast`, `room`, `locations`
+  - `videos`: `genre`, `director`, `protagonists`, `available_on`
+  - `art`: `genre`, `show`, `room`
+
+- 404 Not Found: Si el tipo no existe.
+- 500 Internal Server Error: Si ocurre algún error al obtener los datos.
+
 </details>
 
 <details>
