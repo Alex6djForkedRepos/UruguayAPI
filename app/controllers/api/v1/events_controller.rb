@@ -7,6 +7,28 @@ class Api::V1::EventsController < ApplicationController
     render json: CarteleraService.fetch_billboard
   end
 
+  def tickantel
+    render json: TickantelService.fetch_events(**tickantel_params)
+  rescue ArgumentError
+    render json: { error: 'Invalid date format. Use DD-MM-YYYY' }, status: :unprocessable_entity
+  end
+
+  private
+
+  VALID_PERIODS = %w[daily weekly monthly].freeze
+
+  def tickantel_params
+    if params[:date]
+      { date: Date.strptime(params[:date], '%d-%m-%Y') }
+    elsif params[:period] && VALID_PERIODS.include?(params[:period])
+      { period: params[:period] }
+    else
+      {}
+    end
+  end
+
+  public
+
   def billboard_event
     event_type = params[:event_type]
 

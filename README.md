@@ -182,6 +182,26 @@ Obtiene una lista de items para una categoría específica.
 
 - 404 Not Found: Si el tipo de evento solicitado no existe en la lista de categorías.
 
+- 500 Internal Server Error: Si ocurre algún error en el servidor al obtener la lista de items.
+
+### GET /api/v1/events/tickantel
+
+Obtiene los eventos disponibles en Tickantel (tickantel.com.uy) con información completa de cada show: nombre,
+descripción, fechas, lugar, precio y link de compra.
+
+**Parámetros**
+
+- date: (opcional) Fecha específica en formato DD-MM-YYYY. Si no se envía, devuelve los eventos de hoy.
+- period: (opcional) Puede ser "daily" (default), "weekly" (próximos 7 días) o "monthly" (próximos 30 días). Ignorado
+  si se envía date.
+
+**Respuesta**
+
+- 200 OK: Si se solicita un único día, devuelve un array de eventos. Si se solicita un rango (weekly/monthly),
+  devuelve un objeto JSON con la fecha (YYYY-MM-DD) como clave y el array de eventos como valor.
+
+- 422 Unprocessable Entity: Si el formato de date es inválido.
+
 - 500 Internal Server Error: Si ocurre algún error en el servidor al obtener la lista de items.</details>
 </details>
 
