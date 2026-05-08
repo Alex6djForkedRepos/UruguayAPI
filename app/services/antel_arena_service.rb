@@ -47,6 +47,7 @@ class AntelArenaService
       doc = Nokogiri::HTML(html)
       doc.css('div.eventItem').map do |item|
         {
+          source: 'antel_arena',
           date: item.css('.info-wrapper .info .date').text.strip,
           thumbnail: item.css('.thumb img').attr('src')&.value,
           artist: item.css('.info-wrapper .info .h3').text.strip,

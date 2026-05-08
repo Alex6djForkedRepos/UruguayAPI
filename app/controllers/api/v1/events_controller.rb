@@ -8,7 +8,14 @@ class Api::V1::EventsController < ApplicationController
   end
 
   def tickantel
-    render json: TickantelService.fetch_events(**tickantel_params)
+    render json: TickantelService.fetch_events(**date_params)
+  rescue ArgumentError
+    render json: { error: 'Invalid date format. Use DD-MM-YYYY' }, status: :unprocessable_entity
+  end
+
+  def redtickets
+    args = date_params.merge(details: params[:details] == 'true')
+    render json: RedticketsService.fetch_events(**args)
   rescue ArgumentError
     render json: { error: 'Invalid date format. Use DD-MM-YYYY' }, status: :unprocessable_entity
   end
@@ -17,7 +24,7 @@ class Api::V1::EventsController < ApplicationController
 
   VALID_PERIODS = %w[daily weekly monthly].freeze
 
-  def tickantel_params
+  def date_params
     if params[:date]
       { date: Date.strptime(params[:date], '%d-%m-%Y') }
     elsif params[:period] && VALID_PERIODS.include?(params[:period])

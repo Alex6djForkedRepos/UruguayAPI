@@ -60,6 +60,7 @@ class TickantelService
         next unless href&.include?('espectaculo')
 
         {
+          source: 'tickantel',
           name: item.css('.title .span-block').first&.text&.strip,
           date: item.css('.auto-pf-date').text.gsub(/&nbsp;?/, ' ').gsub(/\s+/, ' ').strip,
           venue: item.css('p:last-of-type span').map(&:text).map(&:strip).reject(&:empty?).join(' - '),

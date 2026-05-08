@@ -203,6 +203,30 @@ descripción, fechas, lugar, precio y link de compra.
 - 422 Unprocessable Entity: Si el formato de date es inválido.
 
 - 500 Internal Server Error: Si ocurre algún error en el servidor al obtener la lista de items.</details>
+
+### GET /api/v1/events/redtickets
+
+Obtiene los eventos disponibles en RedTickets (redtickets.uy). Scrapea el listado completo de
+`/busqueda` y filtra por fecha o período usando heurística sobre el texto de cada función.
+Eventos recurrentes ("Todos los días", "Lunes a Sábado", etc.) se incluyen siempre.
+
+**Parámetros**
+
+- date: (opcional) Fecha específica en formato DD-MM-YYYY. Si no se envía, devuelve los eventos de hoy.
+- period: (opcional) "daily" (default), "weekly" (próximos 7 días) o "monthly" (próximos 30 días).
+  Ignorado si se envía date.
+- details: (opcional) Si es "true", enriquece cada evento con las fechas ISO (`alloweddates`)
+  extraídas de la página de detalle. Más preciso pero mucho más lento.
+
+**Respuesta**
+
+- 200 OK: Si se solicita un único día, devuelve un array de eventos. Si se solicita un rango
+  (weekly/monthly), devuelve un objeto JSON con la fecha (YYYY-MM-DD) como clave y el array de
+  eventos como valor.
+
+- 422 Unprocessable Entity: Si el formato de date es inválido.
+
+- 500 Internal Server Error: Si ocurre algún error en el servidor al obtener la lista de items.</details>
 </details>
 
 <details>

@@ -31,6 +31,7 @@ Rails.application.routes.draw do
         get 'billboard/:event_type', to: 'events#billboard_event'
         get 'antel_arena'
         get 'tickantel'
+        get 'redtickets'
       end
 
       scope 'horoscope', controller: 'horoscope', as: 'horoscope' do
