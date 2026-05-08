@@ -227,6 +227,29 @@ Eventos recurrentes ("Todos los días", "Lunes a Sábado", etc.) se incluyen sie
 - 422 Unprocessable Entity: Si el formato de date es inválido.
 
 - 500 Internal Server Error: Si ocurre algún error en el servidor al obtener la lista de items.</details>
+
+### GET /api/v1/events/teatro_solis
+
+Obtiene los eventos del Teatro Solís (teatrosolis.org.uy). Consulta directamente por rango de fechas
+y filtra por día parseando las fechas en español de cada función (incluye eventos con múltiples fechas
+como "9, 10, 16 de mayo").
+
+**Parámetros**
+
+- date: (opcional) Fecha específica en formato DD-MM-YYYY. Si no se envía, devuelve los eventos de hoy.
+- period: (opcional) "daily" (default), "weekly" (próximos 7 días) o "monthly" (próximos 30 días).
+  Ignorado si se envía date.
+
+**Respuesta**
+
+- 200 OK: Si se solicita un único día, devuelve un array de eventos. Si se solicita un rango
+  (weekly/monthly), devuelve un objeto JSON con la fecha (YYYY-MM-DD) como clave y el array de
+  eventos como valor. Cada evento incluye: `source`, `name`, `date`, `venue`, `category`, `img`,
+  `ticket` (link a Tickantel) e `info` (link al detalle en teatrosolis.org.uy).
+
+- 422 Unprocessable Entity: Si el formato de date es inválido.
+
+- 500 Internal Server Error: Si ocurre algún error en el servidor al obtener la lista de items.</details>
 </details>
 
 <details>

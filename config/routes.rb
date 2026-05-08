@@ -32,6 +32,7 @@ Rails.application.routes.draw do
         get 'antel_arena'
         get 'tickantel'
         get 'redtickets'
+        get 'teatro_solis'
       end
 
       scope 'horoscope', controller: 'horoscope', as: 'horoscope' do
