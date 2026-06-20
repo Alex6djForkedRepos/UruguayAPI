@@ -34,6 +34,8 @@ Rails.application.routes.draw do
         get 'redtickets'
         get 'teatro_solis'
         get 'sodre'
+        get 'montevideo', to: 'events#montevideo_all'
+        get 'montevideo/:category', to: 'events#montevideo'
       end
 
       scope 'horoscope', controller: 'horoscope', as: 'horoscope' do

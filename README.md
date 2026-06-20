@@ -261,6 +261,53 @@ Obtiene el listado completo de un tipo de cartelera.
 - 404 Not Found: Si el tipo no existe.
 - 500 Internal Server Error: Si ocurre algún error al obtener los datos.
 
+---
+
+### GET /api/v1/events/montevideo
+
+Obtiene todos los eventos culturales del portal de la Intendencia de Montevideo (eventos.montevideo.gub.uy), agrupados por categoría. Recorre todas las páginas de cada categoría.
+
+**Parámetros**
+
+Este endpoint no requiere parámetros.
+
+**Respuesta**
+
+- 200 OK: Objeto con una clave por categoría (`artes-escenicas`, `gastronomia`, `institucional`, `audiovisual`, `literatura`, `paseos`, `recreacion`, `musica`, `deportes`, `carnaval`, `artes-visuales`), cada una con un array de eventos.
+- 500 Internal Server Error: Si ocurre algún error al obtener los datos.
+
+---
+
+### GET /api/v1/events/montevideo/:category
+
+Obtiene los eventos de una categoría puntual del portal de la Intendencia de Montevideo. Recorre todas las páginas de la categoría.
+
+**Parámetros**
+
+- `category`: `artes-escenicas`, `gastronomia`, `institucional`, `audiovisual`, `literatura`, `paseos`, `recreacion`, `musica`, `deportes`, `carnaval`, `artes-visuales`.
+
+**Respuesta**
+
+- 200 OK: Array de eventos. Cada evento incluye: `source`, `source_url`, `title`, `venue`, `date`, `start_date`, `end_date`, `category`, `thumbnail`, `event_link`.
+
+```json
+{
+  "source": "Eventos Montevideo",
+  "source_url": "https://eventos.montevideo.gub.uy",
+  "title": "Cultura ciclista y mini rodada musical",
+  "venue": "Rodala (Sarandí 263)",
+  "date": "Sábado 20 de junio de 11:00 a 18:00 h",
+  "start_date": "2026-06-20T14:00:00Z",
+  "end_date": "2026-06-20T21:00:00Z",
+  "category": "Deportes",
+  "thumbnail": "https://eventos.montevideo.gub.uy/sites/eventos.montevideo.gub.uy/files/styles/listado_categorias/public/2026-06/pexels-lisa-stroud-bici.jpg",
+  "event_link": "https://eventos.montevideo.gub.uy/evento/sabados-en-ciudad-vieja/cultura-ciclista-y-mini-rodada-musical"
+}
+```
+
+- 404 Not Found: Si la categoría no existe.
+- 500 Internal Server Error: Si ocurre algún error al obtener los datos.
+
 </details>
 
 <details>

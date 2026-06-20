@@ -55,4 +55,16 @@ class Api::V1::EventsController < ApplicationController
 
     render json: CarteleraService.fetch_by_type(event_type)
   end
+
+  def montevideo
+    category = params[:category]
+
+    return render json: { error: 'Invalid category' }, status: :not_found unless MontevideoEventsService.valid_category?(category)
+
+    render json: MontevideoEventsService.fetch_by_category(category)
+  end
+
+  def montevideo_all
+    render json: MontevideoEventsService.fetch_all
+  end
 end
