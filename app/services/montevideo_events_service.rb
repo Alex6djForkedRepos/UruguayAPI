@@ -21,25 +21,16 @@ class MontevideoEventsService
     def fetch_by_category(category)
       return nil unless valid_category?(category)
 
-      events = []
-      page = 0
-      loop do
-        url = "#{BASE_URL}/categoria/#{category}?page=#{page}"
-        doc = Nokogiri::HTML(HTTParty.get(url).body)
-        articles = doc.css('article.node--type-actividad')
-        break if articles.empty?
+      first_doc = fetch_doc(category, 0)
+      events = parse_articles(first_doc)
+      last = last_page(first_doc)
+      return events if last.zero?
 
-        events += articles.map { |article| extract_data(article) }
-        page += 1
-      end
-
-      events
+      events + (1..last).map { |page| Thread.new(page) { |p| parse_articles(fetch_doc(category, p)) } }.flat_map(&:value)
     end
 
     def fetch_all
-      VALID_CATEGORIES.each_with_object({}) do |category, result|
-        result[category.to_sym] = fetch_by_category(category)
-      end
+      VALID_CATEGORIES.map { |category| Thread.new(category) { |c| [c.to_sym, fetch_by_category(c)] } }.map(&:value).to_h
     end
 
     def valid_category?(category)
@@ -47,6 +38,19 @@ class MontevideoEventsService
     end
 
     private
+
+    def fetch_doc(category, page)
+      Nokogiri::HTML(HTTParty.get("#{BASE_URL}/categoria/#{category}?page=#{page}").body)
+    end
+
+    def parse_articles(doc)
+      doc.css('article.node--type-actividad').map { |article| extract_data(article) }
+    end
+
+    def last_page(doc)
+      href = doc.css('a[title="Ir a la última página"]').first&.[]('href')
+      href && href.match(/page=(\d+)/) ? Regexp.last_match(1).to_i : 0
+    end
 
     def extract_data(article)
       title_link = article.css('.field--name-title a').first
