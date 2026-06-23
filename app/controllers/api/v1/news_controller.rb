@@ -27,6 +27,7 @@ class Api::V1::NewsController < ApplicationController
       article_doc = Nokogiri::HTML(article_response.body)
       headline[:img] = article_doc.css('.foto-ppal.hidden-xs img').first&.[]('src') ||
                        article_doc.css('#gallery-1 img').first&.[]('src') ||
+                       article_doc.at('meta[property="og:image"]')&.[]('content') ||
                        ''
     end
 
