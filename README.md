@@ -140,7 +140,35 @@ Obtiene una lista de todas las festividades y días feriados en Uruguay para el 
 
 ### GET /api/v1/news/headlines
 
-Obtiene una lista de los titulares de noticias más recientes en Uruguay.
+Obtiene los titulares más leídos de Montevideo Portal, agrupados por sección.
+
+**Respuesta**
+
+- 200 OK: Array con una entrada por sección. Cada entrada incluye `source` y `headlines`.
+
+```json
+[
+  {
+    "source": "Noticias",
+    "headlines": [
+      {
+        "href": "https://www.montevideo.com.uy/...",
+        "title": "Título de la noticia",
+        "img": "https://imagenes.montevideo.com.uy/..."
+      }
+    ]
+  }
+]
+```
+
+**Fuentes incluidas**
+
+| Source | Descripción |
+|--------|-------------|
+| `Noticias` | Más leídas generales del portal |
+| `Deportes` | Más leídas de la sección Deportes |
+| `Pantallazo` | Más leídas de la sección Pantallazo (espectáculos) |
+| `Tecnología` | Últimas noticias de Ciencia y Tecnología |
 
 </details>
 
