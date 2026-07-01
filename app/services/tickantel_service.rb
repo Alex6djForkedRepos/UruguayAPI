@@ -7,10 +7,18 @@ class TickantelService
   class << self
     def fetch_events(date: Date.today, period: 'daily')
       dates = dates_for(date, period)
-      return fetch_for_date(dates.first) if dates.one?
+      return enrich(fetch_for_date(dates.first)) if dates.one?
 
-      dates.each_with_object({}) do |d, result|
-        result[d.strftime('%Y-%m-%d')] = fetch_for_date(d)
+      # El mismo espectáculo suele repetirse todos los días de la semana: se
+      # piden los stubs de cada día en paralelo y se enriquece cada evento
+      # único UNA sola vez (antes se re-scrapeaba y re-enriquecía por día,
+      # 7 veces el mismo trabajo), lo que superaba el idle timeout de la
+      # edge function.
+      stubs_by_date = fetch_stubs_concurrently(dates)
+      enriched_by_link = enrich_unique(stubs_by_date.values.flatten)
+
+      stubs_by_date.transform_values do |events|
+        events.map { |e| e.merge(enriched_by_link[e[:event_link]] || {}) }
       end
     end
 
@@ -22,6 +30,21 @@ class TickantelService
       when 'monthly' then (date..date + 29).to_a
       else [date]
       end
+    end
+
+    def fetch_stubs_concurrently(dates)
+      futures = dates.map { |d| [d, Concurrent::Future.execute { fetch_for_date(d) }] }
+      futures.each_with_object({}) { |(d, future), result| result[d.strftime('%Y-%m-%d')] = future.value || [] }
+    end
+
+    def enrich(events)
+      enriched_by_link = enrich_unique(events)
+      events.map { |e| e.merge(enriched_by_link[e[:event_link]] || {}) }
+    end
+
+    def enrich_unique(events)
+      futures = events.uniq { |e| e[:event_link] }.map { |e| [e[:event_link], Concurrent::Future.execute { fetch_show(e[:event_link]) }] }
+      futures.each_with_object({}) { |(link, future), result| result[link] = future.value }
     end
 
     def fetch_for_date(date)
@@ -36,7 +59,7 @@ class TickantelService
         events = batch
       end
 
-      events.uniq { |e| e[:event_link] }.map { |e| e.merge(fetch_show(e[:event_link])) }
+      events
     end
 
     def open_session(date)
